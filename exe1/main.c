@@ -31,6 +31,29 @@ void i2c_task(void *p) {
     // TODO
     // Configure o acc para operar em 4G
 
+    uint8_t reg = 0x1C;
+    uint8_t current_value;
+
+    // Lê valor atual do ACCEL_CONFIG
+    i2c_write_blocking(i2c_default, I2C_CHIP_ADDRESS, &reg, 1, true);
+    i2c_read_blocking(i2c_default, I2C_CHIP_ADDRESS, &current_value, 1, false);
+
+    printf("Antes da configuração, ACCEL_CONFIG = 0x%02X\n", current_value);
+
+    // Zera bits 4 e 3 e configura para 4G
+    current_value &= 0xE7;
+    current_value |= (1 << 3);
+
+    // Escreve o novo valor
+    buf_write[0] = reg;
+    buf_write[1] = current_value;
+    i2c_write_blocking(i2c_default, I2C_CHIP_ADDRESS, buf_write, 2, false);
+
+    vTaskDelay(pdMS_TO_TICKS(10));
+    i2c_write_blocking(i2c_default, I2C_CHIP_ADDRESS, &reg, 1, true);
+    i2c_read_blocking(i2c_default, I2C_CHIP_ADDRESS, &current_value, 1, false);
+
+    printf("Após configuração, ACCEL_CONFIG = 0x%02X\n", current_value);
     while (1) {
         vTaskDelay(pdMS_TO_TICKS(200));
     }
