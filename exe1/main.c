@@ -27,34 +27,36 @@ void i2c_task(void *p) {
     buf_write[0] = MPUREG_PWR_MGMT_1; // registrador
     buf_write[1] = 1 << 7;            // valor
     i2c_write_blocking(i2c_default, I2C_CHIP_ADDRESS, buf_write, 2, false);
-
+    vTaskDelay(pdMS_TO_TICKS(100));  // Aguarda tempo para reset
     // TODO
-    // Configure o acc para operar em 4G
-
+    
     uint8_t reg = 0x1C;
     uint8_t current_value;
 
-    // Lê valor atual do ACCEL_CONFIG
-    i2c_write_blocking(i2c_default, I2C_CHIP_ADDRESS, &reg, 1, true);
-    i2c_read_blocking(i2c_default, I2C_CHIP_ADDRESS, &current_value, 1, false);
-
-    printf("Antes da configuração, ACCEL_CONFIG = 0x%02X\n", current_value);
-
     // Zera bits 4 e 3 e configura para 4G
+    
     current_value &= 0xE7;
     current_value |= (1 << 3);
 
+
     // Escreve o novo valor
     buf_write[0] = reg;
-    buf_write[1] = current_value;
+    buf_write[1] = 0x08;
     i2c_write_blocking(i2c_default, I2C_CHIP_ADDRESS, buf_write, 2, false);
 
     vTaskDelay(pdMS_TO_TICKS(10));
+    
     i2c_write_blocking(i2c_default, I2C_CHIP_ADDRESS, &reg, 1, true);
     i2c_read_blocking(i2c_default, I2C_CHIP_ADDRESS, &current_value, 1, false);
 
     printf("Após configuração, ACCEL_CONFIG = 0x%02X\n", current_value);
+
     while (1) {
+        
+        //i2c_write_blocking(i2c_default, I2C_CHIP_ADDRESS, &reg, 1, true);
+        //i2c_read_blocking(i2c_default, I2C_CHIP_ADDRESS, &current_value, 1, false);
+
+        //printf("O Valor atual da configuração, ACCEL_CONFIG = 0x%02X\n", current_value);
         vTaskDelay(pdMS_TO_TICKS(200));
     }
 }
